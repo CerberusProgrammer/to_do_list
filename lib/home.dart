@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'task.dart';
 
 class Home extends StatefulWidget {
@@ -22,6 +21,143 @@ class _Home extends State<Home> {
 
   bool dense = false;
   bool isFavorite = false;
+
+  @override
+  Widget build(BuildContext context) {
+    List<Widget> tabPages = [
+      allTasks(),
+      favoriteTask(),
+    ];
+
+    List<Tab> tabs = [
+      const Tab(text: 'All'),
+      const Tab(icon: Icon(Icons.star, color: Colors.amber)),
+    ];
+
+    return DefaultTabController(
+      length: tabs.length,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Doit'),
+          bottom: TabBar(
+            tabs: tabs,
+            indicatorColor: Colors.amber,
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(
+                Icons.list,
+              ),
+              onPressed: () {
+                setState(() {
+                  if (dense) {
+                    dense = false;
+                  } else {
+                    dense = true;
+                  }
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.archive_outlined),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (build) {
+                      return Scaffold(
+                        appBar:
+                            AppBar(title: const Text('Done Tasks'), actions: [
+                          PopupMenuButton(
+                            tooltip: 'Show options',
+                            icon: const Icon(Icons.more_vert),
+                            itemBuilder: (context) => [
+                              PopupMenuItem(
+                                child: const Text('Undone tasks'),
+                                onTap: () {
+                                  setState(() {
+                                    tasks.addAll(dones);
+                                  });
+
+                                  dones.removeRange(0, dones.length);
+
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              PopupMenuItem(
+                                child: const Text('Delete All'),
+                                onTap: () {
+                                  dones.removeRange(0, dones.length);
+                                  Navigator.pop(context);
+                                },
+                              ),
+                            ],
+                          )
+                        ]),
+                        body: doneTasks(),
+                      );
+                    },
+                  ),
+                );
+              },
+            )
+          ],
+        ),
+        body: TabBarView(
+          children: tabPages,
+        ),
+        floatingActionButton: FloatingActionButton(
+          tooltip: 'Add',
+          child: const Icon(Icons.add),
+          onPressed: () {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  TextEditingController task = TextEditingController();
+                  TextEditingController subtitle = TextEditingController();
+
+                  return AlertDialog(
+                    scrollable: true,
+                    title: const Text('Task to Do'),
+                    content: Center(
+                      child: Column(
+                        children: [
+                          TextFormField(
+                            controller: task,
+                            autofocus: true,
+                            decoration:
+                                const InputDecoration(labelText: 'Task'),
+                            onEditingComplete: () {
+                              addTask(task.text, subtitle.text);
+                              Navigator.pop(context);
+                            },
+                          ),
+                          TextFormField(
+                            maxLines: 3,
+                            maxLength: 100,
+                            controller: subtitle,
+                            decoration:
+                                const InputDecoration(hintText: 'Description'),
+                          )
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      OutlinedButton(
+                        onPressed: () {
+                          addTask(task.text, subtitle.text);
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Add'),
+                      ),
+                    ],
+                  );
+                });
+          },
+        ),
+      ),
+    );
+  }
 
   void addTask(String task, String description) {
     if (task.isNotEmpty && task.isNotEmpty) {
@@ -166,147 +302,6 @@ class _Home extends State<Home> {
             },
           );
         },
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    List<Widget> tabPages = [
-      allTasks(),
-      favoriteTask(),
-    ];
-
-    List<Tab> tabs = [
-      const Tab(
-        text: 'All',
-      ),
-      const Tab(
-        icon: Icon(Icons.star, color: Colors.amber),
-      ),
-    ];
-
-    return DefaultTabController(
-      length: tabs.length,
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Doit'),
-          bottom: TabBar(
-            tabs: tabs,
-            indicatorColor: Colors.amber,
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(
-                Icons.list,
-              ),
-              onPressed: () {
-                setState(() {
-                  if (dense) {
-                    dense = false;
-                  } else {
-                    dense = true;
-                  }
-                });
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.archive_outlined),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (build) {
-                      return Scaffold(
-                        appBar:
-                            AppBar(title: const Text('Done Tasks'), actions: [
-                          PopupMenuButton(
-                            tooltip: 'Show options',
-                            icon: const Icon(Icons.more_vert),
-                            itemBuilder: (context) => [
-                              PopupMenuItem(
-                                child: const Text('Undone tasks'),
-                                onTap: () {
-                                  setState(() {
-                                    tasks.addAll(dones);
-                                  });
-
-                                  dones.removeRange(0, dones.length);
-
-                                  Navigator.pop(context);
-                                },
-                              ),
-                              PopupMenuItem(
-                                child: const Text('Delete All'),
-                                onTap: () {
-                                  dones.removeRange(0, dones.length);
-                                  Navigator.pop(context);
-                                },
-                              ),
-                            ],
-                          )
-                        ]),
-                        body: doneTasks(),
-                      );
-                    },
-                  ),
-                );
-              },
-            )
-          ],
-        ),
-        body: TabBarView(
-          children: tabPages,
-        ),
-        floatingActionButton: FloatingActionButton(
-          tooltip: 'Add',
-          child: const Icon(Icons.add),
-          onPressed: () {
-            showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  TextEditingController task = TextEditingController();
-                  TextEditingController subtitle = TextEditingController();
-
-                  return AlertDialog(
-                    scrollable: true,
-                    title: const Text('Task to Do'),
-                    content: Center(
-                      child: Column(
-                        children: [
-                          TextFormField(
-                            controller: task,
-                            autofocus: true,
-                            decoration:
-                                const InputDecoration(labelText: 'Task'),
-                            onEditingComplete: () {
-                              addTask(task.text, subtitle.text);
-                              Navigator.pop(context);
-                            },
-                          ),
-                          TextFormField(
-                            maxLines: 3,
-                            maxLength: 100,
-                            controller: subtitle,
-                            decoration:
-                                const InputDecoration(hintText: 'Description'),
-                          )
-                        ],
-                      ),
-                    ),
-                    actions: [
-                      OutlinedButton(
-                        onPressed: () {
-                          addTask(task.text, subtitle.text);
-                          Navigator.pop(context);
-                        },
-                        child: const Text('Add'),
-                      ),
-                    ],
-                  );
-                });
-          },
-        ),
       ),
     );
   }
