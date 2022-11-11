@@ -18,7 +18,7 @@ class _Home extends State<Home> {
   ];
 
   List<Task> favorites = [];
-  List<Task> undones = [];
+  List<Task> dones = [];
 
   bool dense = false;
   bool isFavorite = false;
@@ -61,6 +61,7 @@ class _Home extends State<Home> {
             onTap: () {
               setState(() {
                 favorites[index].done = true;
+                dones.add(favorites.removeAt(index));
               });
             },
             onLongPress: () {
@@ -106,11 +107,12 @@ class _Home extends State<Home> {
             onTap: () {
               setState(() {
                 tasks[index].done = true;
+                dones.add(tasks.removeAt(index));
               });
             },
             onLongPress: () {
               setState(() {
-                tasks.removeAt(index);
+                dones.add(tasks.removeAt(index));
               });
 
               const snackBar = SnackBar(
@@ -130,32 +132,29 @@ class _Home extends State<Home> {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: ListView.builder(
-        itemCount: undones.length,
+        itemCount: dones.length,
         itemBuilder: (BuildContext context, int index) {
           return ListTile(
             dense: dense,
-            trailing: IconButton(
-                onPressed: () {
-                  setState(() {
-                    undones[index].favorite = true;
-                    favorites.add(undones.removeAt(index));
-                  });
-                },
-                icon: undones[index].favorite
-                    ? const Icon(Icons.star)
-                    : const Icon(Icons.star_border)),
-            title: Text(undones[index].task),
-            subtitle: undones[index].task.isEmpty
+            trailing: Icon(
+              dones[index].favorite ? Icons.star : Icons.star_border,
+            ),
+            title: Text(dones[index].task),
+            subtitle: dones[index].task.isEmpty
                 ? null
-                : Text(undones[index].description),
+                : Text(dones[index].description),
             onTap: () {
               setState(() {
-                undones[index].done = true;
+                dones[index].done = false;
+                dones[index].favorite = false;
+                tasks.add(dones.removeAt(index));
+                Navigator.pop(context);
               });
             },
             onLongPress: () {
               setState(() {
-                undones.removeAt(index);
+                dones.removeAt(index);
+                Navigator.pop(context);
               });
 
               const snackBar = SnackBar(
@@ -225,11 +224,24 @@ class _Home extends State<Home> {
                             tooltip: 'Show options',
                             icon: const Icon(Icons.more_vert),
                             itemBuilder: (context) => [
-                              const PopupMenuItem(
-                                child: Text('Undone tasks'),
+                              PopupMenuItem(
+                                child: const Text('Undone tasks'),
+                                onTap: () {
+                                  setState(() {
+                                    tasks.addAll(dones);
+                                  });
+
+                                  dones.removeRange(0, dones.length);
+
+                                  Navigator.pop(context);
+                                },
                               ),
-                              const PopupMenuItem(
-                                child: Text('Delete All'),
+                              PopupMenuItem(
+                                child: const Text('Delete All'),
+                                onTap: () {
+                                  dones.removeRange(0, dones.length);
+                                  Navigator.pop(context);
+                                },
                               ),
                             ],
                           )
